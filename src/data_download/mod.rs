@@ -16,13 +16,15 @@ pub use dividends::*;
 pub use prices::*;
 pub use splits::*;
 
-pub async fn download_data(tickers: &[&str], out_file: File) -> Result<()> {
+pub async fn download_data<T: AsRef<str> + std::fmt::Display>(
+    tickers: &[T],
+    out_file: File,
+) -> Result<()> {
     let iex_client = IexClient::from_env()?;
     let polygon_client = PolygonClient::from_env()?;
     let cal = USSettlement;
     let end_date = cal.advance_bdays(Utc::today().naive_utc(), -1);
     let start_date = cal.advance_bdays(end_date, -100);
-    println!("Start: {}, end: {}", start_date, end_date);
 
     let prices = download_price_data(&polygon_client, tickers, start_date, end_date).await;
     let dividends = download_dividends(&iex_client, tickers).await;

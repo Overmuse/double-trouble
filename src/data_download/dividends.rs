@@ -5,9 +5,12 @@ use std::collections::HashMap;
 
 pub type DividendData = HashMap<String, Vec<(NaiveDate, Decimal)>>;
 
-pub async fn download_dividends(client: &Client<'_>, tickers: &[&str]) -> DividendData {
+pub async fn download_dividends<T: AsRef<str> + std::fmt::Display>(
+    client: &Client<'_>,
+    tickers: &[T],
+) -> DividendData {
     let queries = tickers.iter().map(|ticker| GetDividends {
-        symbol: ticker,
+        symbol: ticker.as_ref(),
         range: Range::ThreeMonths,
     });
     client

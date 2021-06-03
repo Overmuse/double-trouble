@@ -59,14 +59,14 @@ async fn download_ticker_price_data(
     (ticker.to_string(), data)
 }
 
-pub async fn download_price_data(
+pub async fn download_price_data<T: AsRef<str>>(
     client: &Client<'_>,
-    tickers: &[&str],
+    tickers: &[T],
     start_date: NaiveDate,
     end_date: NaiveDate,
 ) -> PriceData {
     let futs = tickers
         .iter()
-        .map(|ticker| download_ticker_price_data(client, ticker, start_date, end_date));
+        .map(|ticker| download_ticker_price_data(client, ticker.as_ref(), start_date, end_date));
     join_all(futs).await.into_iter().collect()
 }

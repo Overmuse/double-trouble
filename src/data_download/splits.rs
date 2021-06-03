@@ -5,9 +5,12 @@ use std::collections::HashMap;
 
 pub type SplitData = HashMap<String, Vec<(NaiveDate, Decimal)>>;
 
-pub async fn download_splits(client: &Client<'_>, tickers: &[&str]) -> SplitData {
+pub async fn download_splits<T: AsRef<str> + std::fmt::Display>(
+    client: &Client<'_>,
+    tickers: &[T],
+) -> SplitData {
     let queries = tickers.iter().map(|ticker| GetSplits {
-        symbol: ticker,
+        symbol: ticker.as_ref(),
         range: Range::ThreeMonths,
     });
     client
