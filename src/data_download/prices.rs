@@ -8,12 +8,14 @@ use std::iter::once;
 
 pub type PriceData = HashMap<String, Vec<(DateTime<Utc>, Decimal)>>;
 
+#[tracing::instrument(skip(client))]
 async fn download_ticker_price_data(
     client: &Client<'_>,
     ticker: &str,
     start_date: NaiveDate,
     end_date: NaiveDate,
 ) -> (String, Vec<(DateTime<Utc>, Decimal)>) {
+    tracing::debug!("Downloading price data");
     let cal = USSettlement;
     let end_1 = cal.advance_bdays(end_date, -67);
     let start_2 = cal.advance_bdays(end_date, -66);
@@ -59,14 +61,14 @@ async fn download_ticker_price_data(
     (ticker.to_string(), data)
 }
 
-pub async fn download_price_data(
+pub async fn download_price_data<T: AsRef<str>>(
     client: &Client<'_>,
-    tickers: &[&str],
+    tickers: &[T],
     start_date: NaiveDate,
     end_date: NaiveDate,
 ) -> PriceData {
     let futs = tickers
         .iter()
-        .map(|ticker| download_ticker_price_data(client, ticker, start_date, end_date));
+        .map(|ticker| download_ticker_price_data(client, ticker.as_ref(), start_date, end_date));
     join_all(futs).await.into_iter().collect()
 }
