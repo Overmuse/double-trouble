@@ -1,25 +1,13 @@
 use crate::trading::domain::Position;
 use crate::trading::TradeBands;
-use chrono::{DateTime, Utc};
 use polygon::ws::Aggregate;
+use position_intents::{AmountSpec, PositionIntent};
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rust_decimal::prelude::*;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tokio::sync::mpsc::UnboundedReceiver;
 use tokio::time::{interval_at, Duration, Instant, Interval};
 use tracing::error;
-use uuid::Uuid;
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct PositionIntent {
-    pub id: String,
-    pub strategy: String,
-    pub timestamp: DateTime<Utc>,
-    pub ticker: String,
-    pub qty: i32,
-    pub limit_price: Option<f64>,
-}
 
 pub struct TradeGenerator {
     cash: Decimal,
@@ -63,50 +51,97 @@ impl TradeGenerator {
         for pair in self.pairs.iter() {
             let p1 = self.prices.get(&pair.asset_1);
             let p2 = self.prices.get(&pair.asset_2);
+            let pair_string = format!("{}-{}", pair.asset_1.clone(), pair.asset_2.clone());
             if let Some((p1, p2)) = p1.zip(p2) {
                 let position = pair.trade_signal(p1, p2);
                 match position {
                     Position::Long => {
-                        intents.push(PositionIntent {
-                            id: Uuid::new_v4().to_string(),
-                            strategy: "double-trouble".to_string(),
-                            ticker: pair.asset_1.clone(),
-                            qty: (Decimal::new(100000, 0) / p1).to_i32().unwrap(),
-                            timestamp: Utc::now(),
-                            limit_price: Some(p1.to_f64().unwrap() * 0.995),
-                        });
-                        intents.push(PositionIntent {
-                            id: Uuid::new_v4().to_string(),
-                            strategy: "double-trouble".to_string(),
-                            ticker: pair.asset_1.clone(),
-                            qty: (-Decimal::new(100000, 0) / p2).to_i32().unwrap(),
-                            timestamp: Utc::now(),
-                            limit_price: Some(p2.to_f64().unwrap() * 1.005),
-                        });
+                        intents.push(
+                            PositionIntent::builder(
+                                "double-trouble".to_string(),
+                                pair.asset_1.clone(),
+                                AmountSpec::Dollars(self.cash / Decimal::new(3, 0)),
+                            )
+                            .limit_price(p1 * Decimal::new(995, 3))
+                            .sub_strategy(pair_string.clone())
+                            .build(),
+                        );
+                        intents.push(
+                            PositionIntent::builder(
+                                "double-trouble".to_string(),
+                                pair.asset_2.clone(),
+                                AmountSpec::Dollars(-self.cash / Decimal::new(3, 0)),
+                            )
+                            .limit_price(p2 * Decimal::new(1005, 3))
+                            .sub_strategy(pair_string.clone())
+                            .build(),
+                        );
                     }
                     Position::Short => {
-                        intents.push(PositionIntent {
-                            id: Uuid::new_v4().to_string(),
-                            strategy: "double-trouble".to_string(),
-                            ticker: pair.asset_1.clone(),
-                            qty: (-Decimal::new(100000, 0) / p1).to_i32().unwrap(),
-                            timestamp: Utc::now(),
-                            limit_price: Some(p1.to_f64().unwrap() * 1.005),
-                        });
-                        intents.push(PositionIntent {
-                            id: Uuid::new_v4().to_string(),
-                            strategy: "double-trouble".to_string(),
-                            ticker: pair.asset_1.clone(),
-                            qty: (Decimal::new(100000, 0) / p2).to_i32().unwrap(),
-                            timestamp: Utc::now(),
-                            limit_price: Some(p2.to_f64().unwrap() * 0.995),
-                        });
+                        intents.push(
+                            PositionIntent::builder(
+                                "double-trouble".to_string(),
+                                pair.asset_1.clone(),
+                                AmountSpec::Dollars(-self.cash / Decimal::new(3, 0)),
+                            )
+                            .limit_price(p1 * Decimal::new(1005, 3))
+                            .sub_strategy(pair_string.clone())
+                            .build(),
+                        );
+                        intents.push(
+                            PositionIntent::builder(
+                                "double-trouble".to_string(),
+                                pair.asset_2.clone(),
+                                AmountSpec::Dollars(self.cash / Decimal::new(3, 0)),
+                            )
+                            .limit_price(p2 * Decimal::new(995, 3))
+                            .sub_strategy(pair_string.clone())
+                            .build(),
+                        );
                     }
-                    _ => continue,
+                    Position::RetainLong => {
+                        intents.push(
+                            PositionIntent::builder(
+                                "double-trouble".to_string(),
+                                pair.asset_1.clone(),
+                                AmountSpec::RetainLong,
+                            )
+                            .sub_strategy(pair_string.clone())
+                            .build(),
+                        );
+                        intents.push(
+                            PositionIntent::builder(
+                                "double-trouble".to_string(),
+                                pair.asset_2.clone(),
+                                AmountSpec::RetainShort,
+                            )
+                            .sub_strategy(pair_string.clone())
+                            .build(),
+                        );
+                    }
+                    Position::RetainShort => {
+                        intents.push(
+                            PositionIntent::builder(
+                                "double-trouble".to_string(),
+                                pair.asset_1.clone(),
+                                AmountSpec::RetainShort,
+                            )
+                            .sub_strategy(pair_string.clone())
+                            .build(),
+                        );
+                        intents.push(
+                            PositionIntent::builder(
+                                "double-trouble".to_string(),
+                                pair.asset_2.clone(),
+                                AmountSpec::RetainLong,
+                            )
+                            .sub_strategy(pair_string.clone())
+                            .build(),
+                        );
+                    }
                 }
             }
         }
-        merge_intents(&mut intents);
         intents
     }
 
@@ -142,8 +177,4 @@ impl TradeGenerator {
             }
         }
     }
-}
-
-fn merge_intents(intents: &mut Vec<PositionIntent>) {
-    todo!()
 }

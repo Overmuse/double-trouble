@@ -212,6 +212,7 @@ dependencies = [
  "kafka-settings",
  "multimap",
  "polygon",
+ "position-intents",
  "rdkafka",
  "reqwest",
  "rust_decimal",
@@ -892,6 +893,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "position-intents"
+version = "0.4.0"
+source = "git+ssh://git@github.com/Overmuse/position-intents?tag=v0.4.0#2416ffa85cbad18e2a0609ffb759bad696942d14"
+dependencies = [
+ "chrono",
+ "rust_decimal",
+ "serde 1.0.126",
+ "serde_json",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
 name = "ppv-lite86"
 version = "0.2.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1509,6 +1523,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
 dependencies = [
  "getrandom",
+ "serde 1.0.126",
 ]
 
 [[package]]

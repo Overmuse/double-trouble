@@ -7,7 +7,6 @@ pub enum Position {
     RetainLong,
     RetainShort,
     Short,
-    Zero,
 }
 
 pub struct TradeBands {
