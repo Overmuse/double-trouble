@@ -9,6 +9,7 @@ pub async fn download_dividends<T: AsRef<str> + std::fmt::Display>(
     client: &Client<'_>,
     tickers: &[T],
 ) -> DividendData {
+    tracing::debug!("Downloading dividends data");
     let queries = tickers.iter().map(|ticker| GetDividends {
         symbol: ticker.as_ref(),
         range: Range::ThreeMonths,

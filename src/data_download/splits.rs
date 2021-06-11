@@ -13,6 +13,7 @@ pub async fn download_splits<T: AsRef<str> + std::fmt::Display>(
         symbol: ticker.as_ref(),
         range: Range::ThreeMonths,
     });
+    tracing::debug!("Downloading splits data");
     client
         .send_all(queries)
         .await
