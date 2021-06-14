@@ -7,7 +7,7 @@ use rust_decimal::prelude::*;
 use std::collections::HashMap;
 use tokio::sync::mpsc::UnboundedReceiver;
 use tokio::time::{interval_at, Duration, Instant, Interval};
-use tracing::error;
+use tracing::{debug, error};
 
 pub struct TradeGenerator {
     cash: Decimal,
@@ -46,6 +46,7 @@ impl TradeGenerator {
         self.prices.insert(agg.symbol, agg.close);
     }
 
+    #[tracing::instrument(skip(self))]
     fn generate_positions(&self) -> Vec<PositionIntent> {
         let mut intents = Vec::new();
         for pair in self.pairs.iter() {
@@ -148,16 +149,19 @@ impl TradeGenerator {
     async fn send_intents(&self, intents: Vec<PositionIntent>) {
         for intent in intents {
             let payload = serde_json::to_vec(&intent).unwrap();
+            debug!("Sending payload {:?}", payload);
             let record = FutureRecord::to("position-intents")
                 .key(&intent.ticker)
                 .payload(&payload);
-            match self.producer.send_result(record) {
-                Ok(fut) => {
-                    if let Err((e, _)) = fut.await.unwrap() {
-                        error!("Failed to send message.\n {:?}", e)
-                    }
-                }
-                Err((e, _)) => error!("Failed to enque message.\n {:?}", e),
+            let res = self
+                .producer
+                .send(record, std::time::Duration::from_secs(0))
+                .await;
+            if let Err((e, msg)) = res {
+                error!(
+                    "Failed to send message.\nError: {:?}\nMessage: {:?}",
+                    e, msg
+                )
             }
         }
     }

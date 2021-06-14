@@ -7,6 +7,7 @@ use std::collections::HashSet;
 use std::iter::once;
 use std::path::Path;
 use tokio::sync::mpsc::unbounded_channel;
+use tracing::info;
 
 mod data;
 mod domain;
@@ -16,6 +17,7 @@ use relay::Relay;
 use trade_generator::TradeGenerator;
 
 pub async fn run<T: AsRef<Path>>(cash: Decimal, data_file: T, kafka: KafkaSettings) -> Result<()> {
+    info!("Starting double-trouble");
     let client = Client::from_env()?;
     let producer = producer(&kafka)?;
     let consumer = consumer(&kafka)?;

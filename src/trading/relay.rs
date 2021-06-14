@@ -4,7 +4,7 @@ use rdkafka::consumer::StreamConsumer;
 use rdkafka::Message;
 use std::collections::HashSet;
 use tokio::sync::mpsc::UnboundedSender;
-use tracing::error;
+use tracing::{error, trace};
 
 pub struct Relay {
     tickers: HashSet<String>,
@@ -54,6 +54,7 @@ impl Relay {
             .for_each_concurrent(50, |parsed| async move {
                 if let PolygonMessage::Second(agg) = parsed {
                     if self.tickers.contains(&agg.symbol) {
+                        trace!("{:?}", agg);
                         let res = self.sender.send(agg);
                         if let Err(e) = res {
                             error!("{:?}", e);
