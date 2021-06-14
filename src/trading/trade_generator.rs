@@ -1,19 +1,20 @@
 use crate::trading::domain::Position;
+use crate::trading::relay::RelayMessage;
 use crate::trading::TradeBands;
 use polygon::ws::Aggregate;
-use position_intents::{AmountSpec, PositionIntent};
+use position_intents::{AmountSpec, PositionIntent, TickerSpec};
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rust_decimal::prelude::*;
 use std::collections::HashMap;
 use tokio::sync::mpsc::UnboundedReceiver;
 use tokio::time::{interval_at, Duration, Instant, Interval};
-use tracing::{debug, error};
+use tracing::{debug, error, warn};
 
-pub struct TradeGenerator {
+pub(super) struct TradeGenerator {
     cash: Decimal,
     pairs: Vec<TradeBands>,
     prices: HashMap<String, Decimal>,
-    receiver: UnboundedReceiver<Aggregate>,
+    receiver: UnboundedReceiver<RelayMessage>,
     producer: FutureProducer,
     interval: Interval,
 }
@@ -22,7 +23,7 @@ impl TradeGenerator {
     pub fn new(
         cash: Decimal,
         pairs: Vec<TradeBands>,
-        receiver: UnboundedReceiver<Aggregate>,
+        receiver: UnboundedReceiver<RelayMessage>,
         producer: FutureProducer,
     ) -> Self {
         let prices = HashMap::new();
@@ -65,7 +66,8 @@ impl TradeGenerator {
                             )
                             .limit_price(p1 * Decimal::new(995, 3))
                             .sub_strategy(pair_string.clone())
-                            .build(),
+                            .build()
+                            .expect("Always works"),
                         );
                         intents.push(
                             PositionIntent::builder(
@@ -75,7 +77,8 @@ impl TradeGenerator {
                             )
                             .limit_price(p2 * Decimal::new(1005, 3))
                             .sub_strategy(pair_string.clone())
-                            .build(),
+                            .build()
+                            .expect("Always works"),
                         );
                     }
                     Position::Short => {
@@ -87,7 +90,8 @@ impl TradeGenerator {
                             )
                             .limit_price(p1 * Decimal::new(1005, 3))
                             .sub_strategy(pair_string.clone())
-                            .build(),
+                            .build()
+                            .expect("Always works"),
                         );
                         intents.push(
                             PositionIntent::builder(
@@ -97,7 +101,8 @@ impl TradeGenerator {
                             )
                             .limit_price(p2 * Decimal::new(995, 3))
                             .sub_strategy(pair_string.clone())
-                            .build(),
+                            .build()
+                            .expect("Always works"),
                         );
                     }
                     Position::RetainLong => {
@@ -108,7 +113,8 @@ impl TradeGenerator {
                                 AmountSpec::RetainLong,
                             )
                             .sub_strategy(pair_string.clone())
-                            .build(),
+                            .build()
+                            .expect("Always works"),
                         );
                         intents.push(
                             PositionIntent::builder(
@@ -117,7 +123,8 @@ impl TradeGenerator {
                                 AmountSpec::RetainShort,
                             )
                             .sub_strategy(pair_string.clone())
-                            .build(),
+                            .build()
+                            .expect("Always works"),
                         );
                     }
                     Position::RetainShort => {
@@ -128,7 +135,8 @@ impl TradeGenerator {
                                 AmountSpec::RetainShort,
                             )
                             .sub_strategy(pair_string.clone())
-                            .build(),
+                            .build()
+                            .expect("Always works"),
                         );
                         intents.push(
                             PositionIntent::builder(
@@ -137,7 +145,8 @@ impl TradeGenerator {
                                 AmountSpec::RetainLong,
                             )
                             .sub_strategy(pair_string.clone())
-                            .build(),
+                            .build()
+                            .expect("Always works"),
                         );
                     }
                 }
@@ -148,10 +157,14 @@ impl TradeGenerator {
 
     async fn send_intents(&self, intents: Vec<PositionIntent>) {
         for intent in intents {
+            let ticker = match intent.ticker.clone() {
+                TickerSpec::Ticker(ticker) => ticker,
+                _ => unreachable!(),
+            };
             let payload = serde_json::to_vec(&intent).unwrap();
             debug!("Sending payload {:?}", payload);
             let record = FutureRecord::to("position-intents")
-                .key(&intent.ticker)
+                .key(&ticker)
                 .payload(&payload);
             let res = self
                 .producer
@@ -166,6 +179,27 @@ impl TradeGenerator {
         }
     }
 
+    async fn wind_down(&mut self) {
+        let intent = PositionIntent::builder("double-trouble", TickerSpec::All, AmountSpec::Zero)
+            .build()
+            .expect("Always works");
+        let payload = serde_json::to_vec(&intent).unwrap();
+        debug!("Sending payload {:?}", payload);
+        let record = FutureRecord::to("position-intents")
+            .key("")
+            .payload(&payload);
+        let res = self
+            .producer
+            .send(record, std::time::Duration::from_secs(0))
+            .await;
+        if let Err((e, msg)) = res {
+            error!(
+                "Failed to send message.\nError: {:?}\nMessage: {:?}",
+                e, msg
+            )
+        }
+    }
+
     pub async fn run(&mut self) {
         loop {
             tokio::select! {
@@ -174,8 +208,15 @@ impl TradeGenerator {
                     self.send_intents(intents).await
                 },
                 agg = self.receiver.recv() => {
-                    if let Some(agg) = agg {
-                        self.update_price(agg)
+                    match agg {
+                        Some(RelayMessage::Agg(agg)) => {
+                            self.update_price(agg)
+                        },
+                        Some(RelayMessage::WindDown) => self.wind_down().await,
+                        None => {
+                            warn!("Relay has shut down but OrderGenerator is still running");
+                            return
+                        }
                     }
                 }
             }
