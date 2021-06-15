@@ -65,7 +65,7 @@ impl TradeGenerator {
                                 pair.asset_1.clone(),
                                 AmountSpec::Dollars(self.cash / Decimal::new(3, 0)),
                             )
-                            .limit_price(p1 * Decimal::new(995, 3))
+                            .limit_price(p1 * Decimal::new(1005, 3))
                             .sub_strategy(pair_string.clone())
                             .build()
                             .expect("Always works"),
@@ -76,7 +76,7 @@ impl TradeGenerator {
                                 pair.asset_2.clone(),
                                 AmountSpec::Dollars(-self.cash / Decimal::new(3, 0)),
                             )
-                            .limit_price(p2 * Decimal::new(1005, 3))
+                            .limit_price(p2 * Decimal::new(995, 3))
                             .sub_strategy(pair_string.clone())
                             .build()
                             .expect("Always works"),
@@ -89,7 +89,7 @@ impl TradeGenerator {
                                 pair.asset_1.clone(),
                                 AmountSpec::Dollars(-self.cash / Decimal::new(3, 0)),
                             )
-                            .limit_price(p1 * Decimal::new(1005, 3))
+                            .limit_price(p1 * Decimal::new(995, 3))
                             .sub_strategy(pair_string.clone())
                             .build()
                             .expect("Always works"),
@@ -100,7 +100,7 @@ impl TradeGenerator {
                                 pair.asset_2.clone(),
                                 AmountSpec::Dollars(self.cash / Decimal::new(3, 0)),
                             )
-                            .limit_price(p2 * Decimal::new(995, 3))
+                            .limit_price(p2 * Decimal::new(1005, 3))
                             .sub_strategy(pair_string.clone())
                             .build()
                             .expect("Always works"),
