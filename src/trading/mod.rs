@@ -2,7 +2,7 @@ use anyhow::Result;
 use domain::TradeBands;
 use kafka_settings::{consumer, producer, KafkaSettings};
 use polygon::rest::Client;
-use rust_decimal::Decimal;
+use rust_decimal::prelude::*;
 use std::collections::HashSet;
 use std::iter::once;
 use std::path::Path;
@@ -26,16 +26,17 @@ pub async fn run<T: AsRef<Path>>(cash: Decimal, data_file: T, kafka: KafkaSettin
         .iter()
         .flat_map(|pair| once(pair.asset_1.clone()).chain(once(pair.asset_2.clone())))
         .collect();
-    let overnight_returns =
-        data::overnight_returns(&client, tickers.iter().map(|s| s.as_ref())).await;
+    let open_close = data::open_close(&client, tickers.iter().map(|s| s.as_ref())).await;
     let pairs: Vec<TradeBands> = trade_pairs
         .into_iter()
         .filter_map(|pair| {
-            let ret_1 = overnight_returns.get(&pair.asset_1);
-            let ret_2 = overnight_returns.get(&pair.asset_2);
-            ret_1.zip(ret_2).map(|(r1, r2)| {
-                let overnight_spread_change = r1 - r2;
-                TradeBands::new(pair, overnight_spread_change)
+            let opt1 = open_close.get(&pair.asset_1);
+            let opt2 = open_close.get(&pair.asset_2);
+            opt1.zip(opt2).map(|((op1, cl1), (op2, cl2))| {
+                let equilibrium = (((op1.ln() - op2.ln()) - pair.original_lt_spread)
+                    + ((cl1.ln() - cl2.ln()) - pair.original_lt_spread))
+                    / Decimal::new(2, 0);
+                TradeBands::new(pair, equilibrium)
             })
         })
         .inspect(|pair| debug!("Pair: {:?}", pair))

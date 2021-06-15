@@ -21,9 +21,7 @@ pub struct TradeBands {
 }
 
 impl TradeBands {
-    pub fn new(trade_pair: TradePair, overnight_spread_change: Decimal) -> Self {
-        let equilibrium =
-            (overnight_spread_change - trade_pair.original_lt_spread) / Decimal::new(2, 0);
+    pub fn new(trade_pair: TradePair, equilibrium: Decimal) -> Self {
         let upper_band = equilibrium + trade_pair.epsilon;
         let lower_band = equilibrium - trade_pair.epsilon;
         Self {

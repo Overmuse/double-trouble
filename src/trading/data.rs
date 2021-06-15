@@ -22,10 +22,10 @@ pub fn read_data<T: AsRef<Path>>(file: T) -> Result<Vec<TradePair>> {
 }
 
 #[tracing::instrument(skip(client, tickers))]
-pub async fn overnight_returns<'a, T: Iterator<Item = &'a str> + 'a>(
+pub async fn open_close<'a, T: Iterator<Item = &'a str> + 'a>(
     client: &Client<'_>,
     tickers: T,
-) -> HashMap<String, Decimal> {
+) -> HashMap<String, (Decimal, Decimal)> {
     debug!("Downloading overnight returns data");
     let reqs = tickers.map(|ticker| GetTickerSnapshot(ticker));
     let results = client.send_all(reqs).await;
@@ -35,7 +35,7 @@ pub async fn overnight_returns<'a, T: Iterator<Item = &'a str> + 'a>(
         .map(|snapshot| {
             (
                 snapshot.ticker.ticker,
-                Decimal::ln(&(snapshot.ticker.day.c / snapshot.ticker.previous_day.o)),
+                (snapshot.ticker.day.o, snapshot.ticker.previous_day.c),
             )
         })
         .collect()
