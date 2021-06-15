@@ -5,7 +5,7 @@ use rdkafka::Message;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use tokio::sync::mpsc::UnboundedSender;
-use tracing::{error, trace, warn};
+use tracing::{error, info, trace, warn};
 
 #[derive(Deserialize, Serialize)]
 #[serde(tag = "state", rename_all = "lowercase")]
@@ -46,10 +46,13 @@ impl Relay {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn run(&self) {
+        info!("Starting relay");
         self.consumer
             .stream()
             .filter_map(|message| async move {
+                trace!("Message received");
                 match message {
                     Ok(message) => Some(message),
                     Err(e) => {
@@ -85,6 +88,7 @@ impl Relay {
                     }
                     Input::MarketState(State::Open { next_close }) => {
                         if next_close <= 600 {
+                            info!("Market closing soon, winding down");
                             let res = self.sender.send(RelayMessage::WindDown);
                             if let Err(e) = res {
                                 error!("{:?}", e);

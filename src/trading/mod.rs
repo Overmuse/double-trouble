@@ -7,7 +7,7 @@ use std::collections::HashSet;
 use std::iter::once;
 use std::path::Path;
 use tokio::sync::mpsc::unbounded_channel;
-use tracing::info;
+use tracing::{debug, info};
 
 mod data;
 mod domain;
@@ -38,6 +38,7 @@ pub async fn run<T: AsRef<Path>>(cash: Decimal, data_file: T, kafka: KafkaSettin
                 TradeBands::new(pair, overnight_spread_change)
             })
         })
+        .inspect(|pair| debug!("Pair: {:?}", pair))
         .collect();
 
     let (tx, rx) = unbounded_channel();
