@@ -2,21 +2,42 @@ use futures::prelude::*;
 use polygon::ws::{Aggregate, PolygonMessage};
 use rdkafka::consumer::StreamConsumer;
 use rdkafka::Message;
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use tokio::sync::mpsc::UnboundedSender;
-use tracing::{error, trace};
+use tracing::{error, trace, warn};
 
-pub struct Relay {
+#[derive(Deserialize, Serialize)]
+#[serde(tag = "state", rename_all = "lowercase")]
+enum State {
+    Open { next_close: usize },
+    Closed { next_open: usize },
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(untagged)]
+enum Input {
+    MarketState(State),
+    Polygon(PolygonMessage),
+}
+
+#[derive(Debug)]
+pub(crate) enum RelayMessage {
+    Agg(Aggregate),
+    WindDown,
+}
+
+pub(super) struct Relay {
     tickers: HashSet<String>,
     consumer: StreamConsumer,
-    sender: UnboundedSender<Aggregate>,
+    sender: UnboundedSender<RelayMessage>,
 }
 
 impl Relay {
     pub fn new(
         tickers: HashSet<String>,
         consumer: StreamConsumer,
-        sender: UnboundedSender<Aggregate>,
+        sender: UnboundedSender<RelayMessage>,
     ) -> Self {
         Self {
             tickers,
@@ -40,7 +61,7 @@ impl Relay {
             .filter_map(|message| async move {
                 message
                     .payload()
-                    .map(|bytes| serde_json::from_slice::<PolygonMessage>(bytes))
+                    .map(|bytes| serde_json::from_slice::<Input>(bytes))
             })
             .filter_map(|res| async move {
                 match res {
@@ -52,14 +73,28 @@ impl Relay {
                 }
             })
             .for_each_concurrent(50, |parsed| async move {
-                if let PolygonMessage::Second(agg) = parsed {
-                    if self.tickers.contains(&agg.symbol) {
-                        trace!("{:?}", agg);
-                        let res = self.sender.send(agg);
-                        if let Err(e) = res {
-                            error!("{:?}", e);
+                match parsed {
+                    Input::Polygon(PolygonMessage::Second(agg)) => {
+                        if self.tickers.contains(&agg.symbol) {
+                            trace!("{:?}", agg);
+                            let res = self.sender.send(RelayMessage::Agg(agg));
+                            if let Err(e) = res {
+                                error!("{:?}", e);
+                            }
                         }
                     }
+                    Input::MarketState(State::Open { next_close }) => {
+                        if next_close <= 600 {
+                            let res = self.sender.send(RelayMessage::WindDown);
+                            if let Err(e) = res {
+                                error!("{:?}", e);
+                            }
+                        }
+                    }
+                    Input::MarketState(State::Closed { .. }) => {
+                        warn!("Markets are closed yet double-trouble is running")
+                    }
+                    Input::Polygon(_) => unreachable!(),
                 }
             })
             .await

@@ -215,7 +215,7 @@ checksum = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f"
 
 [[package]]
 name = "double-trouble"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "bdays",
@@ -921,8 +921,8 @@ dependencies = [
 
 [[package]]
 name = "position-intents"
-version = "0.4.0"
-source = "git+ssh://git@github.com/Overmuse/position-intents?tag=v0.4.0#2416ffa85cbad18e2a0609ffb759bad696942d14"
+version = "0.5.0"
+source = "git+ssh://git@github.com/Overmuse/position-intents?tag=v0.5.0#8d25f7f0d234409a4cb2ebadf4a72869b14c9cb3"
 dependencies = [
  "chrono",
  "rust_decimal",
