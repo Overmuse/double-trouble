@@ -8,7 +8,7 @@ use rust_decimal::prelude::*;
 use std::collections::HashMap;
 use tokio::sync::mpsc::UnboundedReceiver;
 use tokio::time::{interval_at, Duration, Instant, Interval};
-use tracing::{debug, error, warn};
+use tracing::{debug, error, info, trace, warn};
 
 pub(super) struct TradeGenerator {
     cash: Decimal,
@@ -49,6 +49,7 @@ impl TradeGenerator {
 
     #[tracing::instrument(skip(self))]
     fn generate_positions(&self) -> Vec<PositionIntent> {
+        trace!("Generating positions");
         let mut intents = Vec::new();
         for pair in self.pairs.iter() {
             let p1 = self.prices.get(&pair.asset_1);
@@ -201,9 +202,11 @@ impl TradeGenerator {
     }
 
     pub async fn run(&mut self) {
+        info!("Starting TradeGenerator");
         loop {
             tokio::select! {
                 _ = self.interval.tick() => {
+                    trace!("Tick");
                     let intents = self.generate_positions();
                     self.send_intents(intents).await
                 },
