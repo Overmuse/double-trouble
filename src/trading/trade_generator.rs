@@ -215,7 +215,10 @@ impl TradeGenerator {
                         Some(RelayMessage::Agg(agg)) => {
                             self.update_price(agg)
                         },
-                        Some(RelayMessage::WindDown) => self.wind_down().await,
+                        Some(RelayMessage::WindDown) => {
+                            self.wind_down().await;
+                            return
+                        }
                         None => {
                             warn!("Relay has shut down but OrderGenerator is still running");
                             return
