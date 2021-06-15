@@ -89,7 +89,6 @@ impl Relay {
                             if let Err(e) = res {
                                 error!("{:?}", e);
                             }
-                            return;
                         }
                     }
                     Input::MarketState(State::Closed { .. }) => {
