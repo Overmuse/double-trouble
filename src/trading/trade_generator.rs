@@ -158,12 +158,12 @@ impl TradeGenerator {
 
     async fn send_intents(&self, intents: Vec<PositionIntent>) {
         for intent in intents {
+            debug!("Sending intent {:?}", intent);
             let ticker = match intent.ticker.clone() {
                 TickerSpec::Ticker(ticker) => ticker,
                 _ => unreachable!(),
             };
             let payload = serde_json::to_vec(&intent).unwrap();
-            debug!("Sending payload {:?}", payload);
             let record = FutureRecord::to("position-intents")
                 .key(&ticker)
                 .payload(&payload);
@@ -184,8 +184,8 @@ impl TradeGenerator {
         let intent = PositionIntent::builder("double-trouble", TickerSpec::All, AmountSpec::Zero)
             .build()
             .expect("Always works");
+        debug!("Sending intent {:?}", intent);
         let payload = serde_json::to_vec(&intent).unwrap();
-        debug!("Sending payload {:?}", payload);
         let record = FutureRecord::to("position-intents")
             .key("")
             .payload(&payload);

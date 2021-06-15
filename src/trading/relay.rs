@@ -7,14 +7,14 @@ use std::collections::HashSet;
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::{error, info, trace, warn};
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 #[serde(tag = "state", rename_all = "lowercase")]
 enum State {
     Open { next_close: usize },
     Closed { next_open: usize },
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 #[serde(untagged)]
 enum Input {
     MarketState(State),
@@ -52,7 +52,6 @@ impl Relay {
         self.consumer
             .stream()
             .filter_map(|message| async move {
-                trace!("Message received");
                 match message {
                     Ok(message) => Some(message),
                     Err(e) => {
