@@ -1,6 +1,6 @@
 [package]
 name = "double-trouble"
-version = "0.2.5"
+version = "0.2.6"
 authors = ["Sebastian Rollen <seb@overmu.se>"]
 edition = "2018"
 
