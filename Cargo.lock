@@ -226,7 +226,6 @@ dependencies = [
  "futures",
  "iex",
  "kafka-settings",
- "multimap",
  "polygon",
  "position-intents",
  "rdkafka",
@@ -236,7 +235,6 @@ dependencies = [
  "serde_json",
  "tokio",
  "tracing",
- "tracing-bunyan-formatter",
  "tracing-subscriber",
  "uuid",
 ]
@@ -389,16 +387,6 @@ checksum = "501466ecc8a30d1d3b7fc9229b122b2ce8ed6e9d9223f1138d4babb253e51817"
 dependencies = [
  "typenum",
  "version_check",
-]
-
-[[package]]
-name = "gethostname"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e692e296bfac1d2533ef168d0b60ff5897b8b70a4009276834014dd8924cc028"
-dependencies = [
- "libc",
- "winapi",
 ]
 
 [[package]]
@@ -702,15 +690,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b9f1c5b025cda876f66ef43a113f91ebc9f4ccef34843000e0adf6ebbab84e21"
 dependencies = [
  "winapi",
-]
-
-[[package]]
-name = "multimap"
-version = "0.8.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5ce46fe64a9d73be07dcbe690a38ce1b293be448fd8ce1e6c1b8062c9f72c6a"
-dependencies = [
- "serde 1.0.126",
 ]
 
 [[package]]
@@ -1483,7 +1462,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09adeb8c97449311ccd28a427f96fb563e7fd31aabf994189879d9da2394b89d"
 dependencies = [
  "cfg-if",
- "log",
  "pin-project-lite",
  "tracing-attributes",
  "tracing-core",
@@ -1498,23 +1476,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "tracing-bunyan-formatter"
-version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dce1eae70720bd6bb3944f7cf501761aeae658bd1f9293aa373c71a195064910"
-dependencies = [
- "chrono",
- "gethostname",
- "log",
- "serde 1.0.126",
- "serde_json",
- "tracing",
- "tracing-core",
- "tracing-log",
- "tracing-subscriber",
 ]
 
 [[package]]

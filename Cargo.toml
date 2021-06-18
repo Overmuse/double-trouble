@@ -16,7 +16,6 @@ dotenv = "0.15.0"
 futures = "0.3.15"
 kafka-settings = { git = "ssh://git@github.com/Overmuse/kafka-settings", tag = "v0.3.1" }
 iex = { git = "ssh://git@github.com/Overmuse/iex", tag = "v0.1.1" }
-multimap = "0.8.3"
 polygon = { git = "ssh://git@github.com/Overmuse/polygon", tag = "v0.10.1" }
 position-intents = { git = "ssh://git@github.com/Overmuse/position-intents", tag = "v0.5.0" }
 rdkafka = { version = "0.26", features = ["ssl-vendored"] }
@@ -27,5 +26,4 @@ serde_json = "1.0.64"
 tokio = {version = "1.6.0", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1.26"
 tracing-subscriber = "0.2.18"
-tracing-bunyan-formatter = { version = "0.2.4", default-features = false }
 uuid = {version = "0.8.2", features = ["v4"] }
