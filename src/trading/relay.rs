@@ -92,10 +92,12 @@ impl Relay {
                             if let Err(e) = res {
                                 error!("{:?}", e);
                             }
+                            return;
                         }
                     }
                     Input::MarketState(State::Closed { .. }) => {
-                        warn!("Markets are closed yet double-trouble is running")
+                        warn!("Markets are closed yet double-trouble is running");
+                        return;
                     }
                     Input::Polygon(_) => unreachable!(),
                 }
