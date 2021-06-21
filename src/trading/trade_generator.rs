@@ -2,7 +2,7 @@ use crate::trading::domain::Position;
 use crate::trading::relay::RelayMessage;
 use crate::trading::TradeBands;
 use polygon::ws::Aggregate;
-use position_intents::{AmountSpec, PositionIntent, TickerSpec};
+use position_intents::{AmountSpec, PositionIntent, TickerSpec, UpdatePolicy};
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rust_decimal::prelude::*;
 use std::collections::HashMap;
@@ -65,6 +65,7 @@ impl TradeGenerator {
                                 pair.asset_1.clone(),
                                 AmountSpec::Dollars(self.cash / Decimal::new(3, 0)),
                             )
+                            .update_policy(UpdatePolicy::RetainLong)
                             .limit_price(p1 * Decimal::new(1005, 3))
                             .sub_strategy(pair_string.clone())
                             .build()
@@ -76,6 +77,7 @@ impl TradeGenerator {
                                 pair.asset_2.clone(),
                                 AmountSpec::Dollars(-self.cash / Decimal::new(3, 0)),
                             )
+                            .update_policy(UpdatePolicy::RetainShort)
                             .limit_price(p2 * Decimal::new(995, 3))
                             .sub_strategy(pair_string.clone())
                             .build()
@@ -89,6 +91,7 @@ impl TradeGenerator {
                                 pair.asset_1.clone(),
                                 AmountSpec::Dollars(-self.cash / Decimal::new(3, 0)),
                             )
+                            .update_policy(UpdatePolicy::RetainShort)
                             .limit_price(p1 * Decimal::new(995, 3))
                             .sub_strategy(pair_string.clone())
                             .build()
@@ -100,6 +103,7 @@ impl TradeGenerator {
                                 pair.asset_2.clone(),
                                 AmountSpec::Dollars(self.cash / Decimal::new(3, 0)),
                             )
+                            .update_policy(UpdatePolicy::RetainLong)
                             .limit_price(p2 * Decimal::new(1005, 3))
                             .sub_strategy(pair_string.clone())
                             .build()
@@ -111,9 +115,10 @@ impl TradeGenerator {
                             PositionIntent::builder(
                                 "double-trouble".to_string(),
                                 pair.asset_1.clone(),
-                                AmountSpec::RetainLong,
+                                AmountSpec::Zero,
                             )
                             .sub_strategy(pair_string.clone())
+                            .update_policy(UpdatePolicy::RetainLong)
                             .build()
                             .expect("Always works"),
                         );
@@ -121,8 +126,9 @@ impl TradeGenerator {
                             PositionIntent::builder(
                                 "double-trouble".to_string(),
                                 pair.asset_2.clone(),
-                                AmountSpec::RetainShort,
+                                AmountSpec::Zero,
                             )
+                            .update_policy(UpdatePolicy::RetainShort)
                             .sub_strategy(pair_string.clone())
                             .build()
                             .expect("Always works"),
@@ -133,8 +139,9 @@ impl TradeGenerator {
                             PositionIntent::builder(
                                 "double-trouble".to_string(),
                                 pair.asset_1.clone(),
-                                AmountSpec::RetainShort,
+                                AmountSpec::Zero,
                             )
+                            .update_policy(UpdatePolicy::RetainShort)
                             .sub_strategy(pair_string.clone())
                             .build()
                             .expect("Always works"),
@@ -143,8 +150,9 @@ impl TradeGenerator {
                             PositionIntent::builder(
                                 "double-trouble".to_string(),
                                 pair.asset_2.clone(),
-                                AmountSpec::RetainLong,
+                                AmountSpec::Zero,
                             )
+                            .update_policy(UpdatePolicy::RetainLong)
                             .sub_strategy(pair_string.clone())
                             .build()
                             .expect("Always works"),
