@@ -46,6 +46,8 @@ pub async fn run<T: AsRef<Path>>(cash: Decimal, data_file: T, kafka: KafkaSettin
     let relay = Relay::new(tickers, consumer, tx);
     let mut trade_generator = TradeGenerator::new(cash, pairs, rx, producer);
 
-    tokio::join!(trade_generator.run(), relay.run());
-    Ok(())
+    tokio::select! {
+        _ = trade_generator.run() => Ok(()),
+        _ = relay.run() => Ok(())
+    }
 }

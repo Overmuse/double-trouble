@@ -95,7 +95,7 @@ impl Relay {
                         }
                     }
                     Input::MarketState(State::Closed { .. }) => {
-                        warn!("Markets are closed yet double-trouble is running")
+                        warn!("Markets are closed yet double-trouble is running");
                     }
                     Input::Polygon(_) => unreachable!(),
                 }
