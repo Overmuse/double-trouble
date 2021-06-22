@@ -215,7 +215,7 @@ checksum = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f"
 
 [[package]]
 name = "double-trouble"
-version = "0.2.7"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "bdays",
@@ -584,8 +584,8 @@ dependencies = [
 
 [[package]]
 name = "kafka-settings"
-version = "0.3.2"
-source = "git+ssh://git@github.com/Overmuse/kafka-settings?tag=v0.3.2#248af2a1199aa8c3eeecc1972815327b918d6841"
+version = "0.3.3"
+source = "git+ssh://git@github.com/Overmuse/kafka-settings?tag=v0.3.3#d1bee351df81ca6fee9984d4fdaa09f2d3ea6aef"
 dependencies = [
  "rdkafka",
  "serde 1.0.126",
