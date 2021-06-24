@@ -1,6 +1,6 @@
 use crate::trading::data::TradePair;
 use rust_decimal::prelude::*;
-use tracing::info;
+use tracing::{debug, info};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Position {
@@ -37,6 +37,7 @@ impl TradeBands {
     #[tracing::instrument]
     pub fn trade_signal(&self, price_1: &Decimal, price_2: &Decimal) -> Position {
         let spread = (price_1.ln() - price_2.ln()) - self.original_st_spread;
+        debug!(asset_1 = %self.asset_1, asset_2 = %self.asset_2, band_ratio = %((spread - self.lower_band) / (self.upper_band - self.lower_band)));
         if spread > self.upper_band {
             info!("Upper band breached, going short");
             Position::Short
