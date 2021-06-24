@@ -33,8 +33,8 @@ pub async fn run<T: AsRef<Path>>(cash: Decimal, data_file: T, kafka: KafkaSettin
             let opt1 = open_close.get(&pair.asset_1);
             let opt2 = open_close.get(&pair.asset_2);
             opt1.zip(opt2).map(|((op1, cl1), (op2, cl2))| {
-                let equilibrium = (((op1.ln() - op2.ln()) - pair.original_lt_spread)
-                    + ((cl1.ln() - cl2.ln()) - pair.original_lt_spread))
+                let equilibrium = (((op1.ln() - op2.ln()) - pair.original_st_spread)
+                    + ((cl1.ln() - cl2.ln()) - pair.original_st_spread))
                     / Decimal::new(2, 0);
                 TradeBands::new(pair, equilibrium)
             })
