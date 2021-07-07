@@ -2,13 +2,13 @@ use crate::trading::domain::Position;
 use crate::trading::relay::RelayMessage;
 use crate::trading::TradeBands;
 use polygon::ws::Aggregate;
-use position_intents::{AmountSpec, PositionIntent, TickerSpec, UpdatePolicy};
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rust_decimal::prelude::*;
 use std::collections::HashMap;
 use tokio::sync::mpsc::UnboundedReceiver;
 use tokio::time::{interval_at, Duration, Instant, Interval};
 use tracing::{debug, error, info, trace, warn};
+use trading_base::{AmountSpec, PositionIntent, TickerSpec, UpdatePolicy};
 
 pub(super) struct TradeGenerator {
     cash: Decimal,
@@ -218,8 +218,8 @@ impl TradeGenerator {
                     let intents = self.generate_positions();
                     self.send_intents(intents).await
                 },
-                agg = self.receiver.recv() => {
-                    match agg {
+                msg = self.receiver.recv() => {
+                    match msg {
                         Some(RelayMessage::Agg(agg)) => {
                             self.update_price(agg)
                         },
