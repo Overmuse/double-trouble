@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use tokio::sync::mpsc::UnboundedReceiver;
 use tokio::time::{interval_at, Duration, Instant, Interval};
 use tracing::{debug, error, info, trace, warn};
-use trading_base::{AmountSpec, PositionIntent, TickerSpec, UpdatePolicy};
+use trading_base::{Amount, Identifier, PositionIntent, UpdatePolicy};
 
 pub(super) struct TradeGenerator {
     cash: Decimal,
@@ -63,7 +63,7 @@ impl TradeGenerator {
                             PositionIntent::builder(
                                 "double-trouble".to_string(),
                                 pair.asset_1.clone(),
-                                AmountSpec::Dollars(self.cash / Decimal::new(3, 0)),
+                                Amount::Dollars(self.cash / Decimal::new(3, 0)),
                             )
                             .update_policy(UpdatePolicy::RetainLong)
                             .limit_price(p1 * Decimal::new(1005, 3))
@@ -75,7 +75,7 @@ impl TradeGenerator {
                             PositionIntent::builder(
                                 "double-trouble".to_string(),
                                 pair.asset_2.clone(),
-                                AmountSpec::Dollars(-self.cash / Decimal::new(3, 0)),
+                                Amount::Dollars(-self.cash / Decimal::new(3, 0)),
                             )
                             .update_policy(UpdatePolicy::RetainShort)
                             .limit_price(p2 * Decimal::new(995, 3))
@@ -89,7 +89,7 @@ impl TradeGenerator {
                             PositionIntent::builder(
                                 "double-trouble".to_string(),
                                 pair.asset_1.clone(),
-                                AmountSpec::Dollars(-self.cash / Decimal::new(3, 0)),
+                                Amount::Dollars(-self.cash / Decimal::new(3, 0)),
                             )
                             .update_policy(UpdatePolicy::RetainShort)
                             .limit_price(p1 * Decimal::new(995, 3))
@@ -101,7 +101,7 @@ impl TradeGenerator {
                             PositionIntent::builder(
                                 "double-trouble".to_string(),
                                 pair.asset_2.clone(),
-                                AmountSpec::Dollars(self.cash / Decimal::new(3, 0)),
+                                Amount::Dollars(self.cash / Decimal::new(3, 0)),
                             )
                             .update_policy(UpdatePolicy::RetainLong)
                             .limit_price(p2 * Decimal::new(1005, 3))
@@ -115,7 +115,7 @@ impl TradeGenerator {
                             PositionIntent::builder(
                                 "double-trouble".to_string(),
                                 pair.asset_1.clone(),
-                                AmountSpec::Zero,
+                                Amount::Zero,
                             )
                             .sub_strategy(pair_string.clone())
                             .update_policy(UpdatePolicy::RetainLong)
@@ -126,7 +126,7 @@ impl TradeGenerator {
                             PositionIntent::builder(
                                 "double-trouble".to_string(),
                                 pair.asset_2.clone(),
-                                AmountSpec::Zero,
+                                Amount::Zero,
                             )
                             .update_policy(UpdatePolicy::RetainShort)
                             .sub_strategy(pair_string.clone())
@@ -139,7 +139,7 @@ impl TradeGenerator {
                             PositionIntent::builder(
                                 "double-trouble".to_string(),
                                 pair.asset_1.clone(),
-                                AmountSpec::Zero,
+                                Amount::Zero,
                             )
                             .update_policy(UpdatePolicy::RetainShort)
                             .sub_strategy(pair_string.clone())
@@ -150,7 +150,7 @@ impl TradeGenerator {
                             PositionIntent::builder(
                                 "double-trouble".to_string(),
                                 pair.asset_2.clone(),
-                                AmountSpec::Zero,
+                                Amount::Zero,
                             )
                             .update_policy(UpdatePolicy::RetainLong)
                             .sub_strategy(pair_string.clone())
@@ -167,8 +167,8 @@ impl TradeGenerator {
     async fn send_intents(&self, intents: Vec<PositionIntent>) {
         for intent in intents {
             debug!("Sending intent {:?}", intent);
-            let ticker = match intent.ticker.clone() {
-                TickerSpec::Ticker(ticker) => ticker,
+            let ticker = match intent.identifier.clone() {
+                Identifier::Ticker(ticker) => ticker,
                 _ => unreachable!(),
             };
             let payload = serde_json::to_vec(&intent).unwrap();
@@ -189,7 +189,7 @@ impl TradeGenerator {
     }
 
     async fn wind_down(&mut self) {
-        let intent = PositionIntent::builder("double-trouble", TickerSpec::All, AmountSpec::Zero)
+        let intent = PositionIntent::builder("double-trouble", Identifier::All, Amount::Zero)
             .build()
             .expect("Always works");
         debug!("Sending intent {:?}", intent);
