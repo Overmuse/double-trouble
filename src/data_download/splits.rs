@@ -2,6 +2,7 @@ use chrono::NaiveDate;
 use iex::{client::Client, splits::GetSplits, Range};
 use rust_decimal::prelude::*;
 use std::collections::HashMap;
+use tracing::error;
 
 pub type SplitData = HashMap<String, Vec<(NaiveDate, Decimal)>>;
 
@@ -28,7 +29,10 @@ pub async fn download_splits<T: AsRef<str> + std::fmt::Display>(
                     .collect();
                 (ticker.to_string(), data)
             }
-            Err(_) => (ticker.to_string(), vec![]),
+            Err(e) => {
+                error!("Failed to download splits for {}. Error: {}", ticker, e);
+                (ticker.to_string(), vec![])
+            }
         })
         .collect()
 }
