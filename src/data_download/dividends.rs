@@ -2,6 +2,7 @@ use chrono::NaiveDate;
 use iex::{client::Client, dividends::GetDividends, Range};
 use rust_decimal::prelude::*;
 use std::collections::HashMap;
+use tracing::error;
 
 pub type DividendData = HashMap<String, Vec<(NaiveDate, Decimal)>>;
 
@@ -28,7 +29,10 @@ pub async fn download_dividends<T: AsRef<str> + std::fmt::Display>(
                     .collect();
                 (ticker.to_string(), data)
             }
-            Err(_) => (ticker.to_string(), vec![]),
+            Err(e) => {
+                error!("Failed to download dividends for {}. Error: {}", ticker, e);
+                (ticker.to_string(), vec![])
+            }
         })
         .collect()
 }
