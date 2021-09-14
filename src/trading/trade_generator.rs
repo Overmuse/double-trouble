@@ -63,7 +63,7 @@ impl TradeGenerator {
                             PositionIntent::builder(
                                 "double-trouble".to_string(),
                                 pair.asset_1.clone(),
-                                Amount::Dollars(self.cash / Decimal::new(3, 0)),
+                                Amount::Dollars(self.cash / Decimal::new(4, 0)),
                             )
                             .update_policy(UpdatePolicy::RetainLong)
                             .limit_price(p1 * Decimal::new(1005, 3))
@@ -75,7 +75,7 @@ impl TradeGenerator {
                             PositionIntent::builder(
                                 "double-trouble".to_string(),
                                 pair.asset_2.clone(),
-                                Amount::Dollars(-self.cash / Decimal::new(3, 0)),
+                                Amount::Dollars(-self.cash / Decimal::new(4, 0)),
                             )
                             .update_policy(UpdatePolicy::RetainShort)
                             .limit_price(p2 * Decimal::new(995, 3))
@@ -89,7 +89,7 @@ impl TradeGenerator {
                             PositionIntent::builder(
                                 "double-trouble".to_string(),
                                 pair.asset_1.clone(),
-                                Amount::Dollars(-self.cash / Decimal::new(3, 0)),
+                                Amount::Dollars(-self.cash / Decimal::new(4, 0)),
                             )
                             .update_policy(UpdatePolicy::RetainShort)
                             .limit_price(p1 * Decimal::new(995, 3))
@@ -101,7 +101,7 @@ impl TradeGenerator {
                             PositionIntent::builder(
                                 "double-trouble".to_string(),
                                 pair.asset_2.clone(),
-                                Amount::Dollars(self.cash / Decimal::new(3, 0)),
+                                Amount::Dollars(self.cash / Decimal::new(4, 0)),
                             )
                             .update_policy(UpdatePolicy::RetainLong)
                             .limit_price(p2 * Decimal::new(1005, 3))
