@@ -215,7 +215,7 @@ checksum = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f"
 
 [[package]]
 name = "double-trouble"
-version = "0.4.3"
+version = "0.4.4"
 dependencies = [
  "anyhow",
  "bdays",
@@ -518,17 +518,15 @@ dependencies = [
 
 [[package]]
 name = "iex"
-version = "0.1.1"
-source = "git+ssh://git@github.com/Overmuse/iex?tag=v0.1.1#c9e7437fa587e55e591292fa28885a153711a950"
+version = "0.2.0"
+source = "git+ssh://git@github.com/Overmuse/iex?tag=v0.2.0#be47934ab868e52ce739ff568bf361325f067ce3"
 dependencies = [
  "chrono",
  "futures",
- "itertools",
  "reqwest",
  "rust_decimal",
  "serde 1.0.126",
  "serde_json",
- "serde_repr",
  "thiserror",
  "tracing",
 ]
