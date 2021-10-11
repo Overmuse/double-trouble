@@ -1,6 +1,7 @@
 use crate::trading::domain::Position;
 use crate::trading::relay::RelayMessage;
 use crate::trading::TradeBands;
+use chrono::{DateTime, Local};
 use polygon::ws::Aggregate;
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rust_decimal::prelude::*;
@@ -68,6 +69,7 @@ impl TradeGenerator {
                             .update_policy(UpdatePolicy::RetainLong)
                             .limit_price(p1 * Decimal::new(1005, 3))
                             .sub_strategy(pair_string.clone())
+                            .before(DateTime::from(Local::today().and_hms(15, 50, 0)))
                             .build()
                             .expect("Always works"),
                         );
@@ -80,6 +82,7 @@ impl TradeGenerator {
                             .update_policy(UpdatePolicy::RetainShort)
                             .limit_price(p2 * Decimal::new(995, 3))
                             .sub_strategy(pair_string.clone())
+                            .before(DateTime::from(Local::today().and_hms(15, 50, 0)))
                             .build()
                             .expect("Always works"),
                         );
@@ -94,6 +97,7 @@ impl TradeGenerator {
                             .update_policy(UpdatePolicy::RetainShort)
                             .limit_price(p1 * Decimal::new(995, 3))
                             .sub_strategy(pair_string.clone())
+                            .before(DateTime::from(Local::today().and_hms(15, 50, 0)))
                             .build()
                             .expect("Always works"),
                         );
@@ -106,6 +110,7 @@ impl TradeGenerator {
                             .update_policy(UpdatePolicy::RetainLong)
                             .limit_price(p2 * Decimal::new(1005, 3))
                             .sub_strategy(pair_string.clone())
+                            .before(DateTime::from(Local::today().and_hms(15, 50, 0)))
                             .build()
                             .expect("Always works"),
                         );
@@ -119,6 +124,7 @@ impl TradeGenerator {
                             )
                             .sub_strategy(pair_string.clone())
                             .update_policy(UpdatePolicy::RetainLong)
+                            .before(DateTime::from(Local::today().and_hms(15, 50, 0)))
                             .build()
                             .expect("Always works"),
                         );
@@ -130,6 +136,7 @@ impl TradeGenerator {
                             )
                             .update_policy(UpdatePolicy::RetainShort)
                             .sub_strategy(pair_string.clone())
+                            .before(DateTime::from(Local::today().and_hms(15, 50, 0)))
                             .build()
                             .expect("Always works"),
                         );
@@ -143,6 +150,7 @@ impl TradeGenerator {
                             )
                             .update_policy(UpdatePolicy::RetainShort)
                             .sub_strategy(pair_string.clone())
+                            .before(DateTime::from(Local::today().and_hms(15, 50, 0)))
                             .build()
                             .expect("Always works"),
                         );
@@ -154,6 +162,7 @@ impl TradeGenerator {
                             )
                             .update_policy(UpdatePolicy::RetainLong)
                             .sub_strategy(pair_string.clone())
+                            .before(DateTime::from(Local::today().and_hms(15, 50, 0)))
                             .build()
                             .expect("Always works"),
                         );
